@@ -1,1 +1,23 @@
-REA
+Paws and Pivots (WORK IN PROGRESS)
+
+This is a mini pixel game for row reducing for linear algebra!
+
+## Features
+- Solve matrices by reducing them to RREF
+- Earn coins for correct solutions
+- Customize your pet with outfits and accessories
+- Increasing difficulty levels
+- Intense mode where there is a timer
+
+## Built With
+- Python (Pycharm)
+- Pygame
+
+## What We Learned
+- Implementing matrix operations programmatically
+- Game state management in Pygame
+- Combining math concepts with game design
+
+## Authors
+Raymond Wu
+Jenny Bian
