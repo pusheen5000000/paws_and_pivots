@@ -1,15 +1,25 @@
 import pygame, sys
-
+#initialization
 pygame.init()
 
 SCREEN = pygame.display.set_mode((800,800))
 
+#bg
 BG = pygame.image.load('assets/main_menu.png').convert_alpha()
 BG = pygame.transform.scale(BG,(800, 800))
 
+#window name
+pygame.display.set_caption('Paws and Pixels')
 
+#font
 font = pygame.font.SysFont('arial', 30)
 
+#cursor
+cursor_surface = pygame.image.load('assets/cursor.png').convert_alpha()
+cursor_surface = pygame.transform.scale(cursor_surface,(32, 32))
+hotspot = (0,0)
+custom_cursor = pygame.cursors.Cursor(hotspot, cursor_surface)
+pygame.mouse.set_cursor(custom_cursor)
 class Button():
     def __init__(self, x_pos, y_pos, image):
         self.x_pos = x_pos
@@ -41,13 +51,12 @@ class Button():
 
 
 playbutton_surface = pygame.image.load('assets/button.png').convert_alpha()
-playbutton_surface = pygame.transform.scale(playbutton_surface, (250, 250))
-playbutton = Button(400, 450, playbutton_surface)
+playbutton_surface = pygame.transform.scale(playbutton_surface, (263, 263))
+playbutton = Button(210, 625, playbutton_surface)
 
 
 def main_menu():
 
-    pygame.display.set_caption('Menu')
     while True:
         SCREEN.blit(BG, (0, 0))
         MENU_MOUSE_POS = pygame.mouse.get_pos()
