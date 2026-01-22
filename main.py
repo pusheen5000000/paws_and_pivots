@@ -1,9 +1,19 @@
 import pygame, sys
-import pygame, sys
 import math
 tilt_angle = 0
+mouse_held = False
+
 #initialization
 pygame.init()
+pygame.mixer.init()
+
+#audio
+pygame.mixer.music.load('assets/bgmusic.mp3')
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.5)  # 0.0 to 1.0
+click_sound = pygame.mixer.Sound('assets/click.mp3')
+click_sound.set_volume(0.5)
+
 
 SCREEN = pygame.display.set_mode((800,800))
 shrink = 0.625
@@ -31,7 +41,7 @@ custom_cursor = pygame.cursors.Cursor(hotspot, cursor_surface)
 custom_clickcursor = pygame.cursors.Cursor(hotspot, clickcursor_surface)
 pygame.mouse.set_cursor(custom_cursor)
 class Button():
-    def __init__(self, x_pos, y_pos, image):
+    def __init__(self, x_pos, y_pos, image, click_sound=None):
         self.x_pos = x_pos
         self.y_pos = y_pos
 
@@ -43,6 +53,7 @@ class Button():
         self.original_rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
         self.rect = self.original_rect
 
+        self.click_sound = click_sound
     # tilt animation
     def tilt(self, angle):
         self.image = pygame.transform.rotate(self.original_image, angle)
@@ -66,17 +77,19 @@ class Button():
         else:
             pygame.mouse.set_cursor(custom_cursor)
 
-
     def checkForInput(self, position):
         return self.original_rect.collidepoint(position)
 
+    def click(self):
+        if self.click_sound:
+            self.click_sound.play()
 #button loading
 playbutton_surface = pygame.image.load('assets/button.png').convert_alpha()
 playbutton_surface = pygame.transform.scale(playbutton_surface, (263, 263))
-playbutton = Button(210, 625, playbutton_surface)
+playbutton = Button(210, 625, playbutton_surface, click_sound)
 
 gobutton_surface = pygame.image.load('assets/gobutton.png').convert_alpha()
-gobutton = Button(300, 450, gobutton_surface)
+gobutton = Button(300, 450, gobutton_surface, click_sound)
 
 #critters loading and resizing
 critter_scale = 0.6  # 60% of original size
@@ -116,36 +129,35 @@ critter4 = Button(550, 625, critter_sufrace4)  # kitty
 
 
 def main_menu():
-    global tilt_angle
+    global tilt_angle, mouse_held
     while True:
         SCREEN.blit(BG, (0, 0))
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
         tilt_angle += 0.025
         tilt = math.sin(tilt_angle) * 10
-        critter1.tilt(tilt)
-        critter2.tilt(tilt)
-        critter3.tilt(tilt)
-        critter4.tilt(tilt)
+        for c in [critter1, critter2, critter3, critter4]:
+            c.tilt(tilt)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not mouse_held:
+                mouse_held = True
                 if playbutton.checkForInput(MENU_MOUSE_POS): #checks if button is clicked, this should take you to next screen
+                    playbutton.click()
                     pygame.mouse.set_cursor(custom_cursor)
                     chooseCritter()
+            if event.type == pygame.MOUSEBUTTONUP:
+                mouse_held = False
 
         playbutton.grow(playbutton.checkForInput(MENU_MOUSE_POS))
         playbutton.changeCursor(playbutton.checkForInput(MENU_MOUSE_POS))
         playbutton.update()
 
-        critter1.update()
-        critter2.update()
-        critter3.update()
-        critter4.update()
-
+        for c in [critter1, critter2, critter3, critter4]:
+            c.update()
         pygame.display.update()
 
 def chooseCritter():
@@ -158,8 +170,11 @@ def chooseCritter():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                a = 1 #button clicked or something
+            if event.type == pygame.MOUSEBUTTONDOWN and not mouse_held:
+                mouse_held = True
+                gobutton.click() #button clicked or something
+            if event.type == pygame.MOUSEBUTTONUP:
+                mouse_held = False
 
         gobutton.grow(gobutton.checkForInput(WELCOME_MOUSE_POS))
         gobutton.changeCursor(gobutton.checkForInput(WELCOME_MOUSE_POS))
@@ -167,6 +182,5 @@ def chooseCritter():
 
         pygame.display.update()
 
-
-
+#run game
 main_menu()
