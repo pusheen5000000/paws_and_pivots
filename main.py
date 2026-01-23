@@ -22,7 +22,8 @@ BG = pygame.image.load('assets/main_menu.png').convert_alpha()
 BG = pygame.transform.scale(BG,(800, 800))
 welcomeBG = pygame.image.load('assets/welcomeBG.png').convert_alpha()
 welcomeBG = pygame.transform.scale(welcomeBG, (800, 800))
-
+critterBG = pygame.image.load('assets/critterBG.png').convert_alpha()
+critterBG = pygame.transform.scale(critterBG, (800, 800))
 #window name
 pygame.display.set_caption('Paws and Pivots')
 
@@ -83,6 +84,14 @@ class Button():
     def click(self):
         if self.click_sound:
             self.click_sound.play()
+
+    def move(self, newx, newy):
+        self.x_pos = newx
+        self.y_pos = newy
+        self.grown_rect = self.grown_image.get_rect(center=(self.x_pos, self.y_pos))
+        self.original_rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        self.rect = self.original_rect
+
 #button loading
 playbutton_surface = pygame.image.load('assets/button.png').convert_alpha()
 playbutton_surface = pygame.transform.scale(playbutton_surface, (263, 263))
@@ -94,38 +103,38 @@ gobutton = Button(300, 450, gobutton_surface, click_sound)
 #critters loading and resizing
 critter_scale = 0.6  # 60% of original size
 
-critter_sufrace1 = pygame.image.load('assets/Subject.png').convert_alpha()
-critter_sufrace1 = pygame.transform.scale(
-    critter_sufrace1,
-    (int(critter_sufrace1.get_width() * critter_scale),
-     int(critter_sufrace1.get_height() * critter_scale))
+critter_surface1 = pygame.image.load('assets/critter1.png').convert_alpha()
+critter_surface1 = pygame.transform.scale(
+    critter_surface1,
+    (int(critter_surface1.get_width() * critter_scale),
+     int(critter_surface1.get_height() * critter_scale))
 )
 
-critter_sufrace2 = pygame.image.load('assets/Subject 2.png').convert_alpha()
-critter_sufrace2 = pygame.transform.scale(
-    critter_sufrace2,
-    (int(critter_sufrace2.get_width() * critter_scale),
-     int(critter_sufrace2.get_height() * critter_scale))
+critter_surface2 = pygame.image.load('assets/critter2.png').convert_alpha()
+critter_surface2 = pygame.transform.scale(
+    critter_surface2,
+    (int(critter_surface2.get_width() * critter_scale),
+     int(critter_surface2.get_height() * critter_scale))
 )
 
-critter_sufrace3 = pygame.image.load('assets/Subject 3.png').convert_alpha()
-critter_sufrace3 = pygame.transform.scale(
-    critter_sufrace3,
-    (int(critter_sufrace3.get_width() * critter_scale),
-     int(critter_sufrace3.get_height() * critter_scale))
+critter_surface3 = pygame.image.load('assets/critter3.png').convert_alpha()
+critter_surface3 = pygame.transform.scale(
+    critter_surface3,
+    (int(critter_surface3.get_width() * critter_scale),
+     int(critter_surface3.get_height() * critter_scale))
 )
 
-critter_sufrace4 = pygame.image.load('assets/Subject 4.png').convert_alpha()
-critter_sufrace4 = pygame.transform.scale(
-    critter_sufrace4,
-    (int(critter_sufrace4.get_width() * critter_scale),
-     int(critter_sufrace4.get_height() * critter_scale))
+critter_surface4 = pygame.image.load('assets/critter4.png').convert_alpha()
+critter_surface4 = pygame.transform.scale(
+    critter_surface4,
+    (int(critter_surface4.get_width() * critter_scale),
+     int(critter_surface4.get_height() * critter_scale))
 )
 
-critter1 = Button(250, 80, critter_sufrace1)  # dubai
-critter2 = Button(650, 45, critter_sufrace2)  # monkey
-critter3 = Button(150, 400, critter_sufrace3)  # bunny
-critter4 = Button(550, 625, critter_sufrace4)  # kitty
+critter1 = Button(250, 80, critter_surface1)  # dubai
+critter2 = Button(650, 45, critter_surface2)  # monkey
+critter3 = Button(150, 400, critter_surface3)  # bunny
+critter4 = Button(550, 625, critter_surface4)  # kitty
 
 
 def main_menu():
@@ -148,7 +157,7 @@ def main_menu():
                 if playbutton.checkForInput(MENU_MOUSE_POS): #checks if button is clicked, this should take you to next screen
                     playbutton.click()
                     pygame.mouse.set_cursor(custom_cursor)
-                    chooseCritter()
+                    welcome()
             if event.type == pygame.MOUSEBUTTONUP:
                 mouse_held = False
 
@@ -160,7 +169,8 @@ def main_menu():
             c.update()
         pygame.display.update()
 
-def chooseCritter():
+def welcome():
+    global mouse_held
     while True:
         SCREEN.blit(welcomeBG, (0, 0))
 
@@ -172,7 +182,10 @@ def chooseCritter():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN and not mouse_held:
                 mouse_held = True
-                gobutton.click() #button clicked or something
+                if gobutton.checkForInput(WELCOME_MOUSE_POS):
+                    gobutton.click() #button clicked or something
+                    pygame.mouse.set_cursor(custom_cursor)
+                    chooseCritter()
             if event.type == pygame.MOUSEBUTTONUP:
                 mouse_held = False
 
@@ -181,6 +194,38 @@ def chooseCritter():
         gobutton.update()
 
         pygame.display.update()
+
+def chooseCritter():
+    global mouse_held, critter2
+    critter1.move(150, 300)
+    critter3.move(130, 650)
+    critter4.move(550, 350)
+    critter2 = Button(500, 700, pygame.transform.flip(critter2.original_image, True, True))
+    for c in [critter1, critter2, critter3, critter4]:
+        c.image = c.original_image
+        c.rect = c.original_rect
+    while True:
+        SCREEN.blit(critterBG, (0, 0))
+
+        critter_mouse_pos = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and not mouse_held:
+                mouse_held = True
+                for c in [critter1, critter2, critter3, critter4]:
+                    if c.checkForInput(critter_mouse_pos):
+                        c.click()
+                        pygame.mouse.set_cursor(custom_cursor)
+
+        for c in [critter1, critter2, critter3, critter4]:
+            c.grow(c.checkForInput(critter_mouse_pos))
+            c.changeCursor(c.checkForInput(critter_mouse_pos))
+            c.update()
+
+        pygame.display.update()
+
 
 #run game
 main_menu()
