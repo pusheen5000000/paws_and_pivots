@@ -204,6 +204,7 @@ def chooseCritter():
     for c in [critter1, critter2, critter3, critter4]:
         c.image = c.original_image
         c.rect = c.original_rect
+        c.click_sound = click_sound
     while True:
         SCREEN.blit(critterBG, (0, 0))
 
