@@ -7,6 +7,7 @@ confetti_particles = []
 pygame.init()
 pygame.mixer.init()
 
+
 #audio
 pygame.mixer.music.load('assets/bgmusic.mp3')
 pygame.mixer.music.play(-1)
@@ -59,9 +60,11 @@ class Button():
 
         self.click_sound = click_sound
 
+
     def tilt(self, angle):
-        self.image = pygame.transform.rotate(self.original_image, angle)
-        self.rect = self.image.get_rect(center=self.original_rect.center)
+        base_image = self.grown_image if self.image == self.grown_image else self.original_image
+        self.image = pygame.transform.rotate(base_image, angle)
+        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
 
     def update(self):
         SCREEN.blit(self.image, self.rect)
@@ -202,7 +205,7 @@ def main_menu():
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
         # Tilt critters
-        tilt_angle += 0.025
+        tilt_angle += 0.01
         tilt = math.sin(tilt_angle) * 10
         for c in [critter1, critter2, critter3, critter4]:
             c.tilt(tilt)
@@ -211,7 +214,7 @@ def main_menu():
         hoverables = [critter1, critter2, critter3, critter4, playbutton]
         for obj in hoverables:
             if obj.checkForInput(MENU_MOUSE_POS):
-                if random.random() < 0.25:  # slows down confetti spawn
+                if random.random() < 0.1 and len(confetti_particles) < 100:  # slows down confetti spawn
                     confetti_particles.append(Confetti(MENU_MOUSE_POS[0], MENU_MOUSE_POS[1]))
 
         # Handle events
@@ -245,6 +248,8 @@ def main_menu():
                 confetti_particles.remove(particle)
 
         pygame.display.update()
+
+
 
 
 def welcome():
@@ -288,6 +293,8 @@ def welcome():
 
         pygame.display.update()
 
+
+
 def chooseCritter():
     global mouse_held, critter2, tilt_angle
 
@@ -306,7 +313,7 @@ def chooseCritter():
         critter_mouse_pos = pygame.mouse.get_pos()
 
         # Update tilt angle
-        tilt_angle += 0.005
+        tilt_angle += 0.01
         tilt = math.sin(tilt_angle) * 10
 
         hoverables = [critter1, critter2, critter3, critter4]
@@ -314,7 +321,7 @@ def chooseCritter():
         # Spawn confetti if hovering
         for obj in hoverables:
             if obj.checkForInput(critter_mouse_pos):
-                if random.random() < 0.25:
+                if random.random() < 0.1:
                     confetti_particles.append(Confetti(critter_mouse_pos[0], critter_mouse_pos[1]))
 
         # Handle events
@@ -347,6 +354,8 @@ def chooseCritter():
                 confetti_particles.remove(particle)
 
         pygame.display.update()
+
+
 
 
 #run game
