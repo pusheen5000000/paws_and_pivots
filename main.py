@@ -1,4 +1,7 @@
-import pygame, sys, math, random
+import pygame
+import sys
+import math
+import random
 tilt_angle = 0
 mouse_held = False
 confetti_particles = []
@@ -11,16 +14,18 @@ pygame.mixer.init()
 #audio
 pygame.mixer.music.load('assets/bgmusic.mp3')
 pygame.mixer.music.play(-1)
-pygame.mixer.music.set_volume(0.5)  # 0.0 to 1.0
+pygame.mixer.music.set_volume(0.2)  # 0.0 to 1.0
 click_sound = pygame.mixer.Sound('assets/click.mp3')
-click_sound.set_volume(0.5)
+click_sound.set_volume(0.3)
+hover_sound = pygame.mixer.Sound('assets/hover.mp3')
+hover_sound.set_volume(0.5)
 
 
-SCREEN = pygame.display.set_mode((800,800))
+SCREEN = pygame.display.set_mode((800, 800))
 shrink = 0.625
 #bg / assetloading
 BG = pygame.image.load('assets/main_menu.png').convert_alpha()
-BG = pygame.transform.scale(BG,(800, 800))
+BG = pygame.transform.scale(BG, (800, 800))
 welcomeBG = pygame.image.load('assets/welcomeBG.png').convert_alpha()
 welcomeBG = pygame.transform.scale(welcomeBG, (800, 800))
 critterBG = pygame.image.load('assets/critterBG.png').convert_alpha()
@@ -33,17 +38,22 @@ font = pygame.font.SysFont('arial', 30)
 
 #cursor
 cursor_surface = pygame.image.load('assets/cursor.png').convert_alpha()
-cursor_surface = pygame.transform.scale(cursor_surface,(32, 32))
+cursor_surface = pygame.transform.scale(cursor_surface, (32, 32))
 
 clickcursor_surface = pygame.image.load('assets/clickcursor.png').convert_alpha()
-clickcursor_surface = pygame.transform.scale(clickcursor_surface,(32, 32))
+clickcursor_surface = pygame.transform.scale(clickcursor_surface, (32, 32))
 
-hotspot = (0,0)
+hotspot = (0, 0)
 custom_cursor = pygame.cursors.Cursor(hotspot, cursor_surface)
 custom_clickcursor = pygame.cursors.Cursor(hotspot, clickcursor_surface)
 pygame.mouse.set_cursor(custom_cursor)
-class Button():
-    def __init__(self, x_pos, y_pos, image, click_sound=None):
+
+
+class Button:
+    """
+    button class
+    """
+    def __init__(self, x_pos, y_pos, image, click_sound=None, hover_sound=None):
         self.x_pos = x_pos
         self.y_pos = y_pos
 
@@ -54,31 +64,42 @@ class Button():
             image,
             (int(image.get_width() * 1.1), int(image.get_height() * 1.1))
         )
+
         self.grown_rect = self.grown_image.get_rect(center=(self.x_pos, self.y_pos))
         self.original_rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
         self.rect = self.original_rect
 
         self.click_sound = click_sound
+        self.hover_sound = hover_sound
 
+        self.was_hovering = False  # ⭐
+
+    def handle_hover_sound(self, is_hovering):
+        if is_hovering and not self.was_hovering:
+            if self.hover_sound:
+                self.hover_sound.play()
+        self.was_hovering = is_hovering
 
     def tilt(self, angle):
+        """tilt the button"""
         base_image = self.grown_image if self.image == self.grown_image else self.original_image
         self.image = pygame.transform.rotate(base_image, angle)
         self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
 
     def update(self):
+        """draw the button"""
         SCREEN.blit(self.image, self.rect)
 
-    def grow(self, isHovering):
-        if isHovering:
+    def grow(self, is_hovering):
+        if is_hovering:
             self.rect = self.grown_rect
             self.image = self.grown_image
         else:
             self.rect = self.original_rect
             self.image = self.original_image
 
-    def changeCursor(self, isHovering):
-        if isHovering:
+    def changeCursor(self, is_hovering):
+        if is_hovering:
             pygame.mouse.set_cursor(custom_clickcursor)
         else:
             pygame.mouse.set_cursor(custom_cursor)
@@ -101,10 +122,11 @@ class Button():
 #button loading
 playbutton_surface = pygame.image.load('assets/button.png').convert_alpha()
 playbutton_surface = pygame.transform.scale(playbutton_surface, (263, 263))
-playbutton = Button(210, 625, playbutton_surface, click_sound)
-
 gobutton_surface = pygame.image.load('assets/gobutton.png').convert_alpha()
-gobutton = Button(300, 450, gobutton_surface, click_sound)
+
+
+playbutton = Button(210, 625, playbutton_surface, click_sound, hover_sound)
+gobutton = Button(300, 450, gobutton_surface, click_sound, hover_sound)
 
 class Confetti:
     def __init__(self, x, y):
@@ -192,10 +214,10 @@ critter_surface4 = pygame.transform.scale(
      int(critter_surface4.get_height() * critter_scale))
 )
 
-critter1 = Button(250, 80, critter_surface1)  # dubai
-critter2 = Button(650, 45, critter_surface2)  # monkey
-critter3 = Button(150, 400, critter_surface3)  # bunny
-critter4 = Button(550, 625, critter_surface4)  # kitty
+critter1 = Button(250, 80, critter_surface1, hover_sound=hover_sound) #dubai
+critter2 = Button(650, 45, critter_surface2, hover_sound=hover_sound) #monkey
+critter3 = Button(150, 400, critter_surface3, hover_sound=hover_sound) #kitty
+critter4 = Button(550, 625, critter_surface4, hover_sound=hover_sound) #bunny
 
 
 def main_menu():
@@ -232,12 +254,18 @@ def main_menu():
                 mouse_held = False
 
         # Update buttons
-        playbutton.grow(playbutton.checkForInput(MENU_MOUSE_POS))
-        playbutton.changeCursor(playbutton.checkForInput(MENU_MOUSE_POS))
+        is_hovering = playbutton.checkForInput(MENU_MOUSE_POS)
+        playbutton.handle_hover_sound(is_hovering)
+        playbutton.grow(is_hovering)
+        playbutton.changeCursor(is_hovering)
         playbutton.update()
 
         # Update critters
         for c in [critter1, critter2, critter3, critter4]:
+            is_hovering = c.checkForInput(MENU_MOUSE_POS)
+            c.handle_hover_sound(is_hovering)
+            c.grow(is_hovering)
+            c.changeCursor(is_hovering)
             c.update()
 
         # Draw confetti ON TOP
@@ -248,8 +276,6 @@ def main_menu():
                 confetti_particles.remove(particle)
 
         pygame.display.update()
-
-
 
 
 def welcome():
@@ -282,6 +308,8 @@ def welcome():
         # Update buttons
         gobutton.grow(gobutton.checkForInput(WELCOME_MOUSE_POS))
         gobutton.changeCursor(gobutton.checkForInput(WELCOME_MOUSE_POS))
+        is_hovering = gobutton.checkForInput(WELCOME_MOUSE_POS)
+        gobutton.handle_hover_sound(is_hovering)
         gobutton.update()
 
         # Draw confetti
@@ -302,7 +330,12 @@ def chooseCritter():
     critter1.move(150, 300)
     critter3.move(130, 650)
     critter4.move(550, 350)
-    critter2 = Button(500, 700, pygame.transform.flip(critter2.original_image, True, True))
+    critter2 = Button(
+        500, 700,
+        pygame.transform.flip(critter2.original_image, True, True),
+        click_sound=click_sound,
+        hover_sound=hover_sound
+    )
 
     # reset sounds only
     for c in [critter1, critter2, critter3, critter4]:
@@ -341,10 +374,11 @@ def chooseCritter():
         # Update critters
         for c in hoverables:
             is_hovering = c.checkForInput(critter_mouse_pos)
-            c.grow(is_hovering)       # scale up if hovering
-            c.tilt(tilt)              # rotate the current scaled image
+            c.handle_hover_sound(is_hovering)  # 🔊 play hover sound once
+            c.grow(is_hovering)
+            c.tilt(tilt)
             c.changeCursor(is_hovering)
-            c.update()                # draw on screen
+            c.update()
 
         # Update confetti
         for particle in confetti_particles[:]:
