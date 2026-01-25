@@ -9,6 +9,7 @@ confetti_particles = []
 #initialization
 pygame.init()
 pygame.mixer.init()
+clock = pygame.time.Clock()
 
 
 #audio
@@ -138,10 +139,10 @@ class Confetti:
         ])
 
         # very gentle drift
-        self.vx = random.uniform(-0.4, 0.4)
-        self.vy = random.uniform(-0.3, 0.2)
+        self.vx = random.uniform(-0.2, 0.2)
+        self.vy = random.uniform(-0.2, 0.1)
 
-        self.life = 80
+        self.life = 100
 
         # twinkle values
         self.alpha = random.randint(120, 255)
@@ -154,7 +155,7 @@ class Confetti:
         self.y += self.vy
 
         # tiny downward drift (almost floating)
-        self.vy += 0.01
+        self.vy += 0.005
 
         # twinkle (fade in/out)
         self.alpha += self.alpha_speed
@@ -231,7 +232,7 @@ def main_menu():
         hoverables = [critter1, critter2, critter3, critter4, playbutton]
         for obj in hoverables:
             if obj.checkForInput(MENU_MOUSE_POS):
-                if random.random() < 0.1 and len(confetti_particles) < 100:
+                if random.random() < 0.1:
                     confetti_particles.append(
                         Confetti(MENU_MOUSE_POS[0], MENU_MOUSE_POS[1])
                     )
@@ -247,7 +248,9 @@ def main_menu():
                 if playbutton.checkForInput(MENU_MOUSE_POS):
                     playbutton.click()
                     pygame.mouse.set_cursor(custom_cursor)
+                    confetti_particles.clear()
                     welcome()
+                    return
 
             if event.type == pygame.MOUSEBUTTONUP:
                 mouse_held = False
@@ -280,6 +283,8 @@ def main_menu():
                 confetti_particles.remove(particle)
 
         pygame.display.update()
+        clock.tick(360)
+
 
 
 def welcome():
@@ -292,7 +297,7 @@ def welcome():
         hoverables = [gobutton]
         for obj in hoverables:
             if obj.checkForInput(WELCOME_MOUSE_POS):
-                if random.random() < 0.25:
+                if random.random() < 0.1:
                     confetti_particles.append(Confetti(WELCOME_MOUSE_POS[0], WELCOME_MOUSE_POS[1]))
 
         # Handle events
@@ -305,7 +310,9 @@ def welcome():
                 if gobutton.checkForInput(WELCOME_MOUSE_POS):
                     gobutton.click()
                     pygame.mouse.set_cursor(custom_cursor)
+                    confetti_particles.clear()
                     chooseCritter()
+                    return
             if event.type == pygame.MOUSEBUTTONUP:
                 mouse_held = False
 
@@ -323,6 +330,7 @@ def welcome():
                 confetti_particles.remove(particle)
 
         pygame.display.update()
+        clock.tick(360)
 
 
 
@@ -390,6 +398,7 @@ def chooseCritter():
                 confetti_particles.remove(particle)
 
         pygame.display.update()
+        clock.tick(360)
 
 
 
